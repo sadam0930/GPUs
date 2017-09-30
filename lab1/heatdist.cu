@@ -199,11 +199,11 @@ void  gpu_heat_dist(float * playground, unsigned int N, unsigned int iterations)
   for(k=0; k < iterations; k++) {
     compute_heat<<<gridDim, blockDim>>>(d_temp, d_playground, N);
     //copy results in device from temp to playground
-    cudaMemcpy(d_playground, d_temp, ARRAY_BYTES, cudaMemcpyDeviceToDevice);
+    cudaMemcpy(d_playground, d_temp, num_bytes, cudaMemcpyDeviceToDevice);
   }
 
   //copy array from device to host
-  cudaMemcpy(playground, d_temp, ARRAY_BYTES, cudaMemcpyDeviceToHost);
+  cudaMemcpy(playground, d_temp, num_bytes, cudaMemcpyDeviceToHost);
 
   cudaFree(d_playground);
   cudaFree(d_temp);
