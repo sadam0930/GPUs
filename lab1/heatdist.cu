@@ -160,11 +160,52 @@ void  seq_heat_dist(float * playground, unsigned int N, unsigned int iterations)
 }
 
 /***************** The GPU version: Write your code here *********************/
+__global__ void compute_heat(float * d_temp, float * d_playground, unsigned int N)
+{
+  int row = blockIdx.y * blockDim.y + threadIdx.y;
+  int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (row > 0 && row < N-1 && col > 0 && col < N-1) {
+    d_temp[index(row,col,N)] = (d_playground[index(row-1,col,N)] + 
+                                d_playground[index(row+1,col,N)] + 
+                                d_playground[index(row,col-1,N)] + 
+                                d_playground[index(row,col+1,N)])/4.0;
+  }
+}
+
 /* This function can call one or more kenels *********************************/
 void  gpu_heat_dist(float * playground, unsigned int N, unsigned int iterations)
 {
-  
-  
-  
+  int k;
+  //number of bytes to be copied between array temp and array playground
+  unsigned int num_bytes = N*N*sizeof(float);
+
+  //allocate memory to device
+  float * d_temp;
+  float * d_playground;
+
+  cudaMalloc((void **)&d_temp, num_bytes);
+  cudaMalloc((void **)&d_playground, num_bytes);
+
+  //copy array from host to device
+  cudaMemcpy(d_playground, playground, num_bytes, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_temp, d_playground, num_bytes, cudaMemcpyDeviceToDevice); //data locality
+
+  //divide problem into 2d blocks in 2d grid
+  dim3 blockDim(10, 10); //problem size is multiples of 100
+  dim3 gridDim(ceil(N/10), ceil(N/10));
+
+  //calulations performed in device
+  for(k=0; k < iterations; k++) {
+    compute_heat<<<gridDim, blockDim>>>(d_temp, d_playground, N);
+    //copy results in device from temp to playground
+    cudaMemcpy(d_playground, d_temp, ARRAY_BYTES, cudaMemcpyDeviceToDevice);
+  }
+
+  //copy array from device to host
+  cudaMemcpy(playground, d_temp, ARRAY_BYTES, cudaMemcpyDeviceToHost);
+
+  cudaFree(d_playground);
+  cudaFree(d_temp);
 }
 
