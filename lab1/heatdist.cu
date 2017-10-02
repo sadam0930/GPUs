@@ -111,7 +111,7 @@ int main(int argc, char * argv[])
   int j;
   for(i=0;i<N;i++){
     for(j=0;j<N;j++){
-      printf("["+playground[index(i,j,N)]+"]");
+      printf("[%g]", playground[index(i,j,N)]);
     }
     printf("\n");
   }
