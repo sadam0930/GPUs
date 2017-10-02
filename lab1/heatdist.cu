@@ -108,7 +108,7 @@ int main(int argc, char * argv[])
   time_taken = ((double)(end - start))/ CLOCKS_PER_SEC;
   
   printf("Time taken for %s is %lf\n", type_of_device == 0? "CPU" : "GPU", time_taken);
-  int i,j;
+  int j;
   for(i=0;i<N;i++){
     for(j=0;j<N;j++){
       printf("["+playground[index(i,j,N)]+"]");
