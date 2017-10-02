@@ -88,7 +88,7 @@ int main(int argc, char * argv[])
   
   // from (0,10) to (0,30) inclusive are 150F
   for(i = 10; i <= 30; i++)
-    playground[index(i,0,N)] = 150;
+    playground[index(0,i,N)] = 150;
   
   
   if( !type_of_device ) // The CPU sequential version
@@ -108,7 +108,13 @@ int main(int argc, char * argv[])
   time_taken = ((double)(end - start))/ CLOCKS_PER_SEC;
   
   printf("Time taken for %s is %lf\n", type_of_device == 0? "CPU" : "GPU", time_taken);
-  
+  int i,j;
+  for(i=0;i<N;i++){
+    for(j=0;j<N;j++){
+      printf("["+playground[index(i,j,N)]+"]");
+    }
+    printf("\n");
+  }
   free(playground);
   
   return 0;
