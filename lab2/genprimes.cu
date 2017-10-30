@@ -21,18 +21,18 @@
 #include <string>
 #include <math.h>
 
-__global__ static void init(bool* primes) {
-   primes[0] = false;
-   primes[1] = false;
+__global__ static void init(char* primes) {
+   primes[0] = 0;
+   primes[1] = 0;
 }
 
-__global__ static void removeEvens(bool* primes, int N) {
+__global__ static void removeEvens(char* primes, int N) {
    int index = blockIdx.x * blockDim.x *2 + threadIdx.x + threadIdx.x + 4;
    if (index <= N)
-      primes[index] = false;
+      primes[index] = 0;
 }
 
-__global__ static void removeNonPrimes(bool* primes, int N, const int limit) {
+__global__ static void removeNonPrimes(char* primes, int N, const int limit) {
    // get the starting index, remove odds starting at 3
    // block 0: 3,   5,  7,  9, 11, 13, ...,  65
    // block 1: 67, 69, 71, 73, 75, 77, ..., 129
@@ -40,9 +40,9 @@ __global__ static void removeNonPrimes(bool* primes, int N, const int limit) {
 
    // make sure index won't go out of bounds, also don't start the execution
    // on numbers that are already composite
-   if (index <= limit && primes[index] == true) {
-      for (int j=index*index; j <= N; j+=index) {
-         primes[j] = false;
+   if (index <= limit && primes[index] == 1) {
+      for (int j=index*2; j <= N; j+=index) {
+         primes[j] = 0;
       }
    }
 }
@@ -59,21 +59,21 @@ int main(int argc, char * argv[]) {
 	unsigned int N;
 	N = (unsigned int) atoi(argv[1]);	
 
-	// create array of bools; true is prime
-	// we will set non primes to false
-	bool* primes = new bool[N+1];
+	// create array of chars; 1 is prime
+	// we will set non primes to 0
+	char* primes = new char[N+1];
 
 	for(int j=2; j <= N; j++) {
-		primes[j] = true;
+		primes[j] = 1;
 	}
 
 	// allocate device memory
-	bool* d_primes = NULL;
-	int sizePrimes = sizeof(bool) * N;
+	char* d_primes = NULL;
+	int sizePrimes = sizeof(char) * N;
 	int limit = floor((N+1)/2); //only need to compute up to this point
 
 	cudaMalloc(&d_primes, sizePrimes);
-	cudaMemset(d_primes, true, sizePrimes);
+	cudaMemset(d_primes, 1, sizePrimes);
 
 	int blocksize = checkDevice();
 	if (blocksize == EXIT_FAILURE)
@@ -96,11 +96,10 @@ int main(int argc, char * argv[]) {
 	f.open (filename);
 	//skip 0 and 1 are not primes
 	for(int p=2; p <= N; p++) {
-		if(primes[p]) {
+		if(primes[p] == 1) {
 			f << std::to_string(p) << " ";
 		}
 	}
-	// f << "Writing this to a file.\n";
 	f.close();
 	return 0;
 }
